@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Refactr Medic — Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --red: #e8281e;
+    --red-dark: #c01f17;
+    --black: #111111;
+    --off-white: #f5f4f0;
+    --gray: #535252;
+    --border: #ddd;
+    --sidebar-w: 260px;
+  }
+
+  body {
+    font-family: 'Aeonik', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: var(--off-white);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    background: var(--black);
+    position: sticky; top: 0; z-index: 100;
+  }
+
+  .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .logo-img { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .logo-img img { width: 100%; height: 100%; object-fit: contain; }
+  .logo-text { font-family: 'Aeonik', sans-serif; font-weight: 700; font-size: 1rem; color: white; }
+
+  .nav-right { display: flex; align-items: center; gap: 20px; }
+  .nav-pill { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 99px; padding: 6px 14px 6px 8px; }
+  .nav-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--red); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; color: white; overflow: hidden; }
+  .nav-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+  .nav-name { font-size: 0.82rem; color: rgba(255,255,255,0.8); }
+  .nav-icon-btn { width: 36px; height: 36px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .nav-icon-btn svg { width: 16px; height: 16px; stroke: rgba(255,255,255,0.6); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .layout { flex: 1; display: flex; }
+
+  /* SIDEBAR */
+  .sidebar { width: var(--sidebar-w); background: white; border-right: 1px solid var(--border); padding: 32px 0; display: flex; flex-direction: column; flex-shrink: 0; }
+  .sidebar-section { padding: 0 20px; margin-bottom: 8px; }
+  .sidebar-section-label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #bbb; margin-bottom: 8px; padding: 0 8px; }
+  .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; cursor: pointer; transition: background 0.15s; color: var(--gray); font-size: 0.87rem; text-decoration: none; }
+  .sidebar-item:hover { background: var(--off-white); color: var(--black); }
+  .sidebar-item.active { background: rgba(232,40,30,0.08); color: var(--red); font-weight: 500; }
+  .sidebar-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+  .sidebar-divider { height: 1px; background: var(--border); margin: 16px 20px; }
+  .sidebar-footer { margin-top: auto; padding: 20px; border-top: 1px solid var(--border); }
+  .plan-card { background: var(--black); border-radius: 12px; padding: 16px; }
+  .plan-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--red); margin-bottom: 4px; }
+  .plan-name { font-weight: 700; color: white; font-size: 1rem; margin-bottom: 8px; }
+  .plan-bar-bg { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-bottom: 8px; }
+  .plan-bar-fill { height: 4px; width: 68%; background: var(--red); border-radius: 2px; }
+  .plan-sub { font-size: 0.72rem; color: rgba(255,255,255,0.4); }
+  .plan-upgrade { display: block; margin-top: 12px; text-align: center; background: var(--red); color: white; border: none; border-radius: 8px; padding: 8px; font-size: 0.8rem; font-weight: 500; cursor: pointer; width: 100%; }
+
+  /* MAIN CONTENT */
+  .content { flex: 1; padding: 48px 56px; overflow-y: auto; }
+  .page-header { margin-bottom: 40px; }
+  .breadcrumb { font-size: 0.78rem; color: var(--gray); margin-bottom: 8px; }
+  .breadcrumb span { color: var(--black); }
+  .page-title { font-size: 2rem; font-weight: 800; color: var(--black); letter-spacing: -0.03em; }
+
+  /* PROFILE HERO */
+  .profile-hero { background: var(--black); border-radius: 20px; padding: 36px 40px; display: flex; align-items: center; gap: 28px; margin-bottom: 32px; position: relative; overflow: hidden; }
+  .profile-hero::before { content: ''; position: absolute; right: -60px; top: -60px; width: 240px; height: 240px; border-radius: 50%; background: radial-gradient(circle, rgba(232,40,30,0.2) 0%, transparent 70%); }
+
+  .profile-avatar-lg { width: 88px; height: 88px; border-radius: 50%; background: linear-gradient(135deg, var(--red), #ff6b60); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; color: white; flex-shrink: 0; position: relative; cursor: pointer; overflow: hidden; }
+  .profile-avatar-lg img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+  .avatar-edit-overlay { position: absolute; inset: 0; border-radius: 50%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; }
+  .profile-avatar-lg:hover .avatar-edit-overlay { opacity: 1; }
+  .avatar-edit-overlay svg { width: 20px; height: 20px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  #avatarInput { display: none; }
+
+  .profile-info { flex: 1; position: relative; z-index: 1; }
+  .profile-name { font-size: 1.6rem; font-weight: 800; color: white; letter-spacing: -0.02em; margin-bottom: 4px; }
+  .profile-email-display { font-size: 0.85rem; color: rgba(255,255,255,0.5); margin-bottom: 12px; }
+  .verified-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(34,169,74,0.15); border: 1px solid rgba(34,169,74,0.3); color: #22a94a; font-size: 0.72rem; font-weight: 500; padding: 3px 10px; border-radius: 99px; }
+  .unverified-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(232,40,30,0.15); border: 1px solid rgba(232,40,30,0.3); color: #ff7a72; font-size: 0.72rem; font-weight: 500; padding: 3px 10px; border-radius: 99px; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
+  .tab { padding: 10px 20px; font-size: 0.87rem; font-weight: 500; color: var(--gray); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; margin-bottom: -1px; background: none; border-left: none; border-right: none; border-top: none; font-family: 'Aeonik', sans-serif; }
+  .tab:hover { color: var(--black); }
+  .tab.active { color: var(--red); border-bottom-color: var(--red); }
+
+  /* FORM SECTIONS */
+  .section { background: white; border-radius: 16px; padding: 28px 32px; margin-bottom: 20px; border: 1px solid var(--border); }
+  .section-title { font-size: 1rem; font-weight: 700; color: var(--black); margin-bottom: 4px; }
+  .section-sub { font-size: 0.82rem; color: var(--gray); margin-bottom: 24px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-grid.single { grid-template-columns: 1fr; }
+  .input-group { display: flex; flex-direction: column; gap: 6px; }
+  .input-label { font-size: 0.8rem; font-weight: 500; color: var(--black); }
+  .input-field { padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 9px; background: var(--off-white); font-family: 'Aeonik', sans-serif; font-size: 0.88rem; color: var(--black); outline: none; transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; }
+  .input-field:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(232,40,30,0.08); background: white; }
+  .input-field:disabled { opacity: 0.5; cursor: not-allowed; }
+  select.input-field { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; background-color: var(--off-white); }
+
+  .section-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+  .btn-cancel { padding: 10px 22px; border-radius: 9px; border: 1.5px solid var(--border); background: white; font-family: 'Aeonik', sans-serif; font-size: 0.87rem; color: var(--black); cursor: pointer; transition: border-color 0.2s; }
+  .btn-cancel:hover { border-color: #bbb; }
+  .btn-save { padding: 10px 22px; border-radius: 9px; border: none; background: var(--red); font-family: 'Aeonik', sans-serif; font-size: 0.87rem; font-weight: 500; color: white; cursor: pointer; transition: background 0.2s; }
+  .btn-save:hover { background: var(--red-dark); }
+  .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 28px; right: 28px; background: var(--black); color: white; padding: 14px 22px; border-radius: 12px; font-size: 0.88rem; font-weight: 500; display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.25); transform: translateY(80px); opacity: 0; transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1); z-index: 9999; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-left: 4px solid #22a94a; }
+  .toast.error { border-left: 4px solid var(--red); }
+
+  /* PASSWORD STRENGTH */
+  .strength-meter { display: flex; gap: 4px; margin-top: 4px; }
+  .strength-bar { height: 3px; flex: 1; border-radius: 2px; background: var(--border); transition: background 0.3s; }
+  .strength-bar.active { background: var(--red); }
+  .strength-label { font-size: 0.72rem; color: var(--gray); margin-top: 3px; }
+
+  /* DANGER ZONE */
+  .danger-section { background: white; border: 1.5px solid #ffd0ce; border-radius: 16px; padding: 28px 32px; }
+  .danger-title { font-size: 1rem; font-weight: 700; color: #c01f17; margin-bottom: 4px; }
+  .danger-sub { font-size: 0.82rem; color: var(--gray); margin-bottom: 20px; }
+  .danger-actions { display: flex; gap: 10px; }
+  .btn-danger-outline { padding: 10px 20px; border-radius: 9px; border: 1.5px solid #ffd0ce; background: white; font-size: 0.85rem; font-weight: 500; color: var(--red); cursor: pointer; transition: all 0.2s; }
+  .btn-danger-outline:hover { border-color: var(--red); background: rgba(232,40,30,0.04); }
+
+  /* NOTIFICATIONS */
+  .toggle-list { display: flex; flex-direction: column; gap: 0; }
+  .toggle-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border); }
+  .toggle-item:last-child { border-bottom: none; }
+  .toggle-info .tgl-title { font-size: 0.88rem; font-weight: 500; color: var(--black); margin-bottom: 2px; }
+  .toggle-info .tgl-desc { font-size: 0.78rem; color: var(--gray); }
+  .toggle-switch { width: 40px; height: 22px; border-radius: 11px; background: var(--border); position: relative; cursor: pointer; flex-shrink: 0; transition: background 0.25s; }
+  .toggle-switch.on { background: var(--red); }
+  .toggle-switch::after { content: ''; position: absolute; width: 16px; height: 16px; border-radius: 50%; background: white; top: 3px; left: 3px; transition: transform 0.25s; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+  .toggle-switch.on::after { transform: translateX(18px); }
+
+  /* LOADING SKELETON */
+  .skeleton { background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="refactr-medic.html" class="logo">
+    <div class="logo-img"><img src="images/logo.png" alt="Refactr Medic"></div>
+    <span class="logo-text">Refactr Medic</span>
+  </a>
+  <div class="nav-right">
+    <div class="nav-icon-btn">
+      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </div>
+    <div class="nav-pill">
+      <div class="nav-avatar" id="nav-avatar">?</div>
+      <span class="nav-name" id="nav-name">Loading...</span>
+    </div>
+  </div>
+</nav>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Main</div>
+      <a href="refactr-medic.html" class="sidebar-item">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a href="upload-ct-scan.html" class="sidebar-item">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload CT Scan
+      </a>
+      <a href="#" class="sidebar-item">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        My Scans
+      </a>
+      <a href="#" class="sidebar-item">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        Patients
+      </a>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Account</div>
+      <a href="profile.html" class="sidebar-item active">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Profile
+      </a>
+      <a href="login.html" class="sidebar-item" id="signOutBtn">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </a>
+    </div>
+    <div class="sidebar-footer">
+      <div class="plan-card">
+        <div class="plan-label">Current Plan</div>
+        <div class="plan-name">Professional</div>
+        <div class="plan-bar-bg"><div class="plan-bar-fill"></div></div>
+        <div class="plan-sub">68 / 100 scans used this month</div>
+        <button class="plan-upgrade">Upgrade to Enterprise</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <div class="page-header">
+      <div class="breadcrumb">Account / <span>Profile</span></div>
+      <h1 class="page-title">Profile Management</h1>
+    </div>
+
+    <!-- HERO -->
+    <div class="profile-hero">
+      <div class="profile-avatar-lg" id="heroAvatar" onclick="document.getElementById('avatarInput').click()">
+        <span id="heroInitials">?</span>
+        <div class="avatar-edit-overlay">
+          <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+      </div>
+      <input type="file" id="avatarInput" accept="image/jpeg,image/png" onchange="uploadAvatar(this)">
+
+      <div class="profile-info">
+        <div class="profile-name" id="heroName">Loading...</div>
+        <div class="profile-email-display" id="heroEmail">—</div>
+        <div id="heroBadge"></div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(this,'personal')">Personal Info</button>
+      <button class="tab" onclick="switchTab(this,'security')">Security</button>
+      <button class="tab" onclick="switchTab(this,'notifications')">Notifications</button>
+    </div>
+
+    <!-- PERSONAL TAB -->
+    <div id="tab-personal">
+      <div class="section">
+        <div class="section-title">Personal Information</div>
+        <div class="section-sub">Update your display name and email address</div>
+        <div class="form-grid">
+          <div class="input-group">
+            <label class="input-label">Full Name</label>
+            <input type="text" id="fieldName" class="input-field" placeholder="Your full name">
+          </div>
+          <div class="input-group">
+            <label class="input-label">Email Address</label>
+            <input type="email" id="fieldEmail" class="input-field" placeholder="doctor@hospital.com">
+          </div>
+        </div>
+        <div class="section-actions">
+          <button class="btn-cancel" onclick="loadProfile()">Cancel</button>
+          <button class="btn-save" id="btnSavePersonal" onclick="savePersonalInfo()">Save Changes</button>
+        </div>
+      </div>
+
+      <div class="danger-section">
+        <div class="danger-title">Danger Zone</div>
+        <div class="danger-sub">These actions are irreversible. Please proceed with caution.</div>
+        <div class="danger-actions">
+          <button class="btn-danger-outline">Deactivate Account</button>
+          <button class="btn-danger-outline">Delete Account Permanently</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECURITY TAB -->
+    <div id="tab-security" style="display:none;">
+      <div class="section">
+        <div class="section-title">Change Password</div>
+        <div class="section-sub">Use a strong password with at least 8 characters, uppercase, number, and symbol</div>
+        <div class="form-grid single">
+          <div class="input-group">
+            <label class="input-label">New Password</label>
+            <input type="password" id="fieldNewPassword" class="input-field" placeholder="Enter new password" oninput="checkStrength(this.value)">
+            <div class="strength-meter">
+              <div class="strength-bar" id="s1"></div>
+              <div class="strength-bar" id="s2"></div>
+              <div class="strength-bar" id="s3"></div>
+              <div class="strength-bar" id="s4"></div>
+            </div>
+            <div class="strength-label" id="strengthLabel">Enter a password</div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Confirm New Password</label>
+            <input type="password" id="fieldConfirmPassword" class="input-field" placeholder="Repeat new password">
+          </div>
+        </div>
+        <div class="section-actions">
+          <button class="btn-cancel" onclick="document.getElementById('fieldNewPassword').value=''; document.getElementById('fieldConfirmPassword').value='';">Cancel</button>
+          <button class="btn-save" id="btnSavePassword" onclick="savePassword()">Update Password</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS TAB -->
+    <div id="tab-notifications" style="display:none;">
+      <div class="section">
+        <div class="section-title">Notification Preferences</div>
+        <div class="section-sub">Control what alerts and emails you receive</div>
+        <div class="toggle-list">
+          <div class="toggle-item">
+            <div class="toggle-info">
+              <div class="tgl-title">Scan Processing Complete</div>
+              <div class="tgl-desc">Get notified when your CT scan 3D model is ready</div>
+            </div>
+            <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="toggle-item">
+            <div class="toggle-info">
+              <div class="tgl-title">AI Analysis Results</div>
+              <div class="tgl-desc">Receive alerts when AI detects anomalies in scans</div>
+            </div>
+            <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="toggle-item">
+            <div class="toggle-info">
+              <div class="tgl-title">Weekly Usage Report</div>
+              <div class="tgl-desc">Summary of scans processed and insights</div>
+            </div>
+            <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="toggle-item">
+            <div class="toggle-info">
+              <div class="tgl-title">Product Updates</div>
+              <div class="tgl-desc">New features, improvements, and announcements</div>
+            </div>
+            <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+        <div class="section-actions">
+          <button class="btn-save" onclick="showToast('Preferences saved', 'success')">Save Preferences</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end .content -->
+</div><!-- end .layout -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = "http://127.0.0.1:8000";
+
+  // ─── Auth helper ────────────────────────────────────────────────
+  function getToken() {
+    return localStorage.getItem("access_token");
+  }
+
+  function authHeaders() {
+    return { "Authorization": `Bearer ${getToken()}` };
+  }
+
+  function redirectIfLoggedOut(status) {
+    if (status === 401) {
+      localStorage.removeItem("access_token");
+      window.location.href = "login.html";
+      return true;
+    }
+    return false;
+  }
+
+  // ─── Toast ───────────────────────────────────────────────────────
+  function showToast(msg, type = "success") {
+    const t = document.getElementById("toast");
+    t.textContent = type === "success" ? "✓  " + msg : "✕  " + msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove("show"), 3500);
+  }
+
+  // ─── Tab switching ───────────────────────────────────────────────
+  function switchTab(el, id) {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    el.classList.add("active");
+    ["personal", "security", "notifications"].forEach(t => {
+      const el = document.getElementById("tab-" + t);
+      if (el) el.style.display = t === id ? "block" : "none";
+    });
+  }
+
+  // ─── Password strength ───────────────────────────────────────────
+  function checkStrength(val) {
+    const bars = ["s1","s2","s3","s4"].map(id => document.getElementById(id));
+    const label = document.getElementById("strengthLabel");
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    bars.forEach((b, i) => b.classList.toggle("active", i < score));
+    const labels = ["", "Weak", "Fair", "Good", "Strong"];
+    label.textContent = val.length === 0 ? "Enter a password" : labels[score];
+  }
+
+  // ─── Load profile ────────────────────────────────────────────────
+  async function loadProfile() {
+    const token = getToken();
+    if (!token) { window.location.href = "login.html"; return; }
+
+    try {
+      const res = await fetch(`${API}/profile/`, { headers: authHeaders() });
+      if (redirectIfLoggedOut(res.status)) return;
+
+      const user = await res.json();
+
+      const name  = user.name  || "User";
+      const email = user.email || "";
+      const avatarUrl = user.avatar_url || null;
+
+      // Initials
+      const initials = name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0,2);
+
+      // ── Nav bar ──
+      document.getElementById("nav-name").textContent = name;
+      const navAvatar = document.getElementById("nav-avatar");
+      if (avatarUrl) {
+        navAvatar.innerHTML = `<img src="${API}/${avatarUrl}" alt="avatar">`;
+      } else {
+        navAvatar.textContent = initials;
+      }
+
+      // ── Hero ──
+      document.getElementById("heroName").textContent = name;
+      document.getElementById("heroEmail").textContent = email;
+      document.getElementById("heroInitials").textContent = initials;
+
+      const heroAvatar = document.getElementById("heroAvatar");
+      if (avatarUrl) {
+        // Keep the overlay inside
+        const overlay = heroAvatar.querySelector(".avatar-edit-overlay");
+        heroAvatar.innerHTML = `<img src="${API}/${avatarUrl}" alt="avatar">`;
+        heroAvatar.appendChild(overlay);
+      }
+
+      // Verified badge
+      const badge = document.getElementById("heroBadge");
+      badge.innerHTML = user.is_verified
+        ? `<span class="verified-badge">● Email Verified</span>`
+        : `<span class="unverified-badge">⚠ Email Not Verified</span>`;
+
+      // ── Form fields ──
+      document.getElementById("fieldName").value  = name;
+      document.getElementById("fieldEmail").value = email;
+
+    } catch (err) {
+      console.error("Profile load error:", err);
+      showToast("Could not load profile. Is the backend running?", "error");
+    }
+  }
+
+  // ─── Save personal info (name / email) ───────────────────────────
+  async function savePersonalInfo() {
+    const btn = document.getElementById("btnSavePersonal");
+    const name  = document.getElementById("fieldName").value.trim();
+    const email = document.getElementById("fieldEmail").value.trim();
+
+    if (!name) { showToast("Name cannot be empty", "error"); return; }
+
+    btn.disabled = true;
+    btn.textContent = "Saving…";
+
+    try {
+      const res = await fetch(`${API}/profile/`, {
+        method: "PUT",
+        headers: { ...authHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email })
+      });
+
+      const data = await res.json();
+      if (redirectIfLoggedOut(res.status)) return;
+
+      if (res.ok) {
+        showToast(data.detail || "Profile updated successfully", "success");
+        loadProfile();   // Refresh all fields with latest data
+      } else {
+        showToast(data.detail || "Update failed", "error");
+      }
+    } catch (err) {
+      showToast("Server error. Is the backend running?", "error");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Save Changes";
+    }
+  }
+
+  // ─── Save password ────────────────────────────────────────────────
+  async function savePassword() {
+    const btn = document.getElementById("btnSavePassword");
+    const newPw  = document.getElementById("fieldNewPassword").value;
+    const confPw = document.getElementById("fieldConfirmPassword").value;
+
+    if (!newPw)  { showToast("Please enter a new password", "error"); return; }
+    if (newPw !== confPw) { showToast("Passwords do not match", "error"); return; }
+
+    btn.disabled = true;
+    btn.textContent = "Updating…";
+
+    try {
+      const res = await fetch(`${API}/profile/`, {
+        method: "PUT",
+        headers: { ...authHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({ password: newPw })
+      });
+
+      const data = await res.json();
+      if (redirectIfLoggedOut(res.status)) return;
+
+      if (res.ok) {
+        showToast("Password updated successfully", "success");
+        document.getElementById("fieldNewPassword").value = "";
+        document.getElementById("fieldConfirmPassword").value = "";
+        document.getElementById("strengthLabel").textContent = "Enter a password";
+        ["s1","s2","s3","s4"].forEach(id => document.getElementById(id).classList.remove("active"));
+      } else {
+        const detail = Array.isArray(data.detail)
+          ? data.detail.join(" · ")
+          : (data.detail || "Update failed");
+        showToast(detail, "error");
+      }
+    } catch (err) {
+      showToast("Server error. Is the backend running?", "error");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Update Password";
+    }
+  }
+
+  // ─── Upload avatar ────────────────────────────────────────────────
+  async function uploadAvatar(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    // Client-side validation
+    if (!["image/jpeg","image/png","image/jpg"].includes(file.type)) {
+      showToast("Only JPEG and PNG images are allowed", "error");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      showToast("Image must be under 2 MB", "error");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    showToast("Uploading avatar…", "success");
+
+    try {
+      const res = await fetch(`${API}/profile/avatar`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: formData
+      });
+
+      const data = await res.json();
+      if (redirectIfLoggedOut(res.status)) return;
+
+      if (res.ok) {
+        showToast("Avatar updated!", "success");
+        loadProfile();
+      } else {
+        showToast(data.detail || "Avatar upload failed", "error");
+      }
+    } catch (err) {
+      showToast("Server error during upload", "error");
+    }
+
+    input.value = "";   // Reset input so same file can be re-selected
+  }
+
+  // ─── Sign out ─────────────────────────────────────────────────────
+  document.getElementById("signOutBtn").addEventListener("click", (e) => {
+    e.preventDefault();
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("token_type");
+    window.location.href = "login.html";
+  });
+
+  // ─── Init ─────────────────────────────────────────────────────────
+  document.addEventListener("DOMContentLoaded", loadProfile);
+</script>
+</body>
+</html>

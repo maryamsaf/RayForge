@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Refactr Medic — Upload CT Scan</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --red: #e8281e;
+    --red-dark: #c01f17;
+    --black: #111111;
+    --off-white: #f5f4f0;
+    --gray: #535252;
+    --border: #ddd;
+    --sidebar-w: 260px;
+  }
+
+  body {
+    font-family: 'Aeonik', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: var(--off-white);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    background: var(--black);
+    position: sticky; top: 0; z-index: 100;
+  }
+
+  .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .logo-img { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .logo-img img { width: 100%; height: 100%; object-fit: contain; }
+  .logo-text { font-family: 'Aeonik', sans-serif; font-weight: 700; font-size: 1rem; color: white; }
+
+  .nav-right { display: flex; align-items: center; gap: 20px; }
+  .nav-pill { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 99px; padding: 6px 14px 6px 8px; }
+  .nav-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--red); display: flex; align-items: center; justify-content: center; font-family: 'Aeonik', sans-serif; font-size: 0.7rem; font-weight: 700; color: white; }
+  .nav-name { font-size: 0.82rem; color: rgba(255,255,255,0.8); }
+  .nav-icon-btn { width: 36px; height: 36px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .nav-icon-btn svg { width: 16px; height: 16px; stroke: rgba(255,255,255,0.6); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .layout { flex: 1; display: flex; }
+
+  .sidebar { width: var(--sidebar-w); background: white; border-right: 1px solid var(--border); padding: 32px 0; display: flex; flex-direction: column; flex-shrink: 0; }
+  .sidebar-section { padding: 0 20px; margin-bottom: 8px; }
+  .sidebar-section-label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #bbb; margin-bottom: 8px; padding: 0 8px; }
+  .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; cursor: pointer; transition: background 0.15s; color: var(--gray); font-size: 0.87rem; text-decoration: none; }
+  .sidebar-item:hover { background: var(--off-white); color: var(--black); }
+  .sidebar-item.active { background: rgba(232,40,30,0.08); color: var(--red); font-weight: 500; }
+  .sidebar-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+  .sidebar-divider { height: 1px; background: var(--border); margin: 16px 20px; }
+
+  .content { flex: 1; padding: 48px 56px; overflow-y: auto; max-width: 900px; }
+
+  .breadcrumb { font-size: 0.78rem; color: var(--gray); margin-bottom: 8px; }
+  .breadcrumb span { color: var(--black); }
+  .page-title { font-family: 'Aeonik', sans-serif; font-size: 2rem; font-weight: 800; color: var(--black); letter-spacing: -0.03em; margin-bottom: 6px; }
+  .page-sub { font-size: 0.9rem; color: var(--gray); margin-bottom: 40px; }
+
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 20px;
+    padding: 60px 40px;
+    text-align: center;
+    background: white;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    margin-bottom: 24px;
+  }
+  .upload-zone:hover, .upload-zone.dragover { border-color: var(--red); background: rgba(232,40,30,0.02); }
+  .upload-zone.dragover { transform: scale(1.01); }
+
+  .upload-icon-wrap { width: 72px; height: 72px; border-radius: 18px; background: rgba(232,40,30,0.08); border: 1px solid rgba(232,40,30,0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+  .upload-icon-wrap svg { width: 32px; height: 32px; stroke: var(--red); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  .upload-title { font-family: 'Aeonik', sans-serif; font-size: 1.2rem; font-weight: 700; color: var(--black); margin-bottom: 8px; }
+  .upload-desc { font-size: 0.87rem; color: var(--gray); line-height: 1.6; margin-bottom: 20px; }
+
+  .upload-cta { display: inline-flex; align-items: center; gap: 8px; background: var(--red); color: white; border: none; border-radius: 10px; padding: 11px 24px; font-family: 'Aeonik', sans-serif; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+  .upload-cta:hover { background: var(--red-dark); }
+  .upload-cta svg { width: 16px; height: 16px; stroke: white; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  .upload-formats { margin-top: 16px; font-size: 0.75rem; color: #bbb; }
+  .upload-formats span { background: var(--off-white); border-radius: 4px; padding: 2px 7px; margin: 0 3px; font-weight: 500; color: var(--gray); }
+
+  .file-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
+
+  .file-card { background: white; border: 1.5px solid var(--border); border-radius: 14px; padding: 16px 20px; display: flex; align-items: center; gap: 16px; transition: border-color 0.2s; animation: slideIn 0.3s ease both; }
+  @keyframes slideIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+  .file-card.done { border-color: #c8f0d8; }
+  .file-card.error { border-color: #ffd0ce; }
+
+  .file-icon { width: 44px; height: 44px; border-radius: 10px; background: rgba(232,40,30,0.08); border: 1px solid rgba(232,40,30,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .file-icon svg { width: 20px; height: 20px; stroke: var(--red); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .file-info { flex: 1; }
+  .file-name { font-size: 0.88rem; font-weight: 500; color: var(--black); margin-bottom: 3px; }
+  .file-meta { font-size: 0.75rem; color: var(--gray); display: flex; align-items: center; gap: 8px; }
+  .file-meta .dot { width: 3px; height: 3px; background: #ccc; border-radius: 50%; }
+
+  .progress-wrap { margin-top: 8px; }
+  .progress-bar-bg { height: 4px; background: var(--off-white); border-radius: 2px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--red); border-radius: 2px; transition: width 0.4s; }
+  .progress-label { font-size: 0.72rem; color: var(--gray); margin-top: 4px; }
+
+  .file-status { flex-shrink: 0; display: flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 500; }
+  .file-status.uploading { color: var(--red); }
+  .file-status.done { color: #22a94a; }
+  .file-status.error { color: var(--red-dark); }
+  .file-status svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  .file-remove { background: none; border: none; cursor: pointer; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.15s; flex-shrink: 0; }
+  .file-remove:hover { background: var(--off-white); }
+  .file-remove svg { width: 14px; height: 14px; stroke: var(--gray); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  .details-card { background: white; border: 1.5px solid var(--border); border-radius: 16px; padding: 28px 32px; margin-bottom: 24px; }
+  .details-title { font-family: 'Aeonik', sans-serif; font-size: 1rem; font-weight: 700; color: var(--black); margin-bottom: 4px; }
+  .details-sub { font-size: 0.82rem; color: var(--gray); margin-bottom: 24px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .input-group { display: flex; flex-direction: column; gap: 6px; }
+  .input-label { font-size: 0.8rem; font-weight: 500; color: var(--black); }
+  .input-field { padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 9px; background: var(--off-white); font-family: 'Aeonik', sans-serif; font-size: 0.88rem; color: var(--black); outline: none; transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; }
+  .input-field:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(232,40,30,0.08); background: white; }
+  select.input-field { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; background-color: var(--off-white); }
+  textarea.input-field { resize: vertical; min-height: 80px; }
+
+  .hipaa-notice { background: #fffbeb; border: 1px solid #f5e07a; border-radius: 12px; padding: 14px 18px; display: flex; align-items: flex-start; gap: 12px; margin-bottom: 24px; }
+  .hipaa-icon { width: 18px; height: 18px; stroke: #b58c00; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; margin-top: 1px; }
+  .hipaa-text { font-size: 0.8rem; color: #7a6000; line-height: 1.6; }
+  .hipaa-text strong { font-weight: 600; }
+
+  .submit-row { display: flex; align-items: center; justify-content: space-between; }
+  .cancel-btn { padding: 12px 24px; border-radius: 10px; border: 1.5px solid var(--border); background: white; font-family: 'Aeonik', sans-serif; font-size: 0.9rem; color: var(--black); cursor: pointer; }
+  .submit-btn { padding: 13px 32px; border-radius: 10px; border: none; background: var(--red); color: white; font-family: 'Aeonik', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; letter-spacing: -0.01em; }
+  .submit-btn:hover { background: var(--red-dark); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(232,40,30,0.25); }
+  .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+  .submit-btn svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .ai-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--black); color: white; font-size: 0.73rem; font-weight: 500; padding: 5px 12px; border-radius: 99px; margin-bottom: 16px; }
+  .ai-badge::before { content: ''; width: 6px; height: 6px; background: var(--red); border-radius: 50%; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="refactr-medic.html" class="logo">
+    <div class="logo-img"><img src="images/logo.png" alt="Refactr Medic"></div>
+    <span class="logo-text">Refactr Medic</span>
+  </a>
+  <div class="nav-right">
+    <div class="nav-icon-btn">
+      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </div>
+    <div class="nav-pill">
+      <div class="nav-avatar" id="nav-avatar">?</div>
+      <span class="nav-name" id="nav-name">Loading...</span>
+    </div>
+  </div>
+</nav>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Main</div>
+      <a href="refactr-medic.html" class="sidebar-item">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a href="upload-ct-scan.html" class="sidebar-item active">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload CT Scan
+      </a>
+      <a href="#" class="sidebar-item">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        My Scans
+      </a>
+      <a href="#" class="sidebar-item">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        Patients
+      </a>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Account</div>
+      <a href="profile.html" class="sidebar-item">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Profile
+      </a>
+      <a href="#" class="sidebar-item" id="signOutBtn">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </a>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <div class="breadcrumb">Dashboard / <span>Upload CT Scan</span></div>
+    <h1 class="page-title">Upload CT Scan</h1>
+    <p class="page-sub">Upload DICOM files from your CT scan to generate an interactive 3D model and AI analysis.</p>
+
+    <div class="ai-badge">AI Analysis Enabled</div>
+
+    <div class="upload-zone" id="dropZone">
+      <input type="file" id="fileInput" accept=".dcm,.dicom,.zip,.nii,.nii.gz" multiple>
+      <div class="upload-icon-wrap">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div class="upload-title">Drag & drop your DICOM files here</div>
+      <p class="upload-desc">Or click to browse from your computer.<br>We support individual DICOM slices, folders compressed as ZIP, and NIfTI files.</p>
+      <button class="upload-cta" id="chooseBtn" type="button">
+        <svg viewBox="0 0 24 24"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Choose Files
+      </button>
+      <div class="upload-formats">
+        Supported formats: 
+        <span>.dcm</span><span>.dicom</span><span>.zip</span><span>.nii</span><span>.nii.gz</span>
+        &nbsp;· Max 2GB per file
+      </div>
+    </div>
+
+    <div class="file-list" id="fileList"></div>
+
+    <div class="details-card">
+      <div class="details-title">Scan Information</div>
+      <div class="details-sub">Provide details to help organize and accurately process the scan</div>
+      <div class="form-grid">
+        <div class="input-group">
+          <label class="input-label">Patient Name (or ID)</label>
+          <input type="text" class="input-field" placeholder="e.g. John Doe or P-00421">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Date of Scan</label>
+          <input type="date" class="input-field">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Scan Type</label>
+          <select class="input-field">
+            <option value="">Select scan type</option>
+            <option selected>Chest CT</option>
+            <option>Abdominal CT</option>
+            <option>Brain CT</option>
+            <option>Pelvis CT</option>
+            <option>Full Body CT</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Priority</label>
+          <select class="input-field">
+            <option>Normal</option>
+            <option>Urgent</option>
+            <option>Emergency</option>
+          </select>
+        </div>
+        <div class="input-group" style="grid-column: 1 / -1;">
+          <label class="input-label">Clinical Notes (optional)</label>
+          <textarea class="input-field" placeholder="Relevant symptoms, referral reason, areas of concern..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="hipaa-notice">
+      <svg class="hipaa-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div class="hipaa-text">
+        <strong>HIPAA Compliant:</strong> All files are encrypted at rest and in transit using AES-256. Patient data is handled in accordance with HIPAA and GDPR regulations.
+      </div>
+    </div>
+
+    <div class="submit-row">
+      <button class="cancel-btn">Cancel</button>
+      <button class="submit-btn" id="generateBtn">
+        Process & Generate 3D Model
+        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = "http://127.0.0.1:8000";
+  /** Latest successful upload — used by “Process & Generate 3D Model”. */
+  let lastUploadScanId = null;
+
+  function getToken() {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      window.location.href = "login.html";
+      return null;
+    }
+    return token;
+  }
+
+  // Sign Out
+  document.getElementById("signOutBtn").addEventListener("click", (e) => {
+    e.preventDefault();
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("token_type");
+    window.location.href = "login.html";
+  });
+
+  // Load User Profile
+  async function loadUserProfile() {
+    const token = getToken();
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${API}/profile/`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem("access_token");
+        window.location.href = "login.html";
+        return;
+      }
+
+      if (!response.ok) return;
+
+      const user = await response.json();
+      const fullName = user.name || "User";
+      const initials = fullName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
+
+      document.getElementById("nav-name").textContent = fullName;
+      document.getElementById("nav-avatar").textContent = initials;
+    } catch (err) {
+      console.error("Error loading profile:", err);
+    }
+  }
+
+  // File Handling
+  function handleFiles(files) {
+    const fileList = document.getElementById("fileList");
+    Array.from(files).forEach(file => {
+      const card = document.createElement("div");
+      card.className = "file-card";
+      card.innerHTML = `
+        <div class="file-icon">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div class="file-info">
+          <div class="file-name">${file.name}</div>
+          <div class="file-meta">${(file.size / 1024 / 1024).toFixed(1)} MB</div>
+          <div class="progress-wrap">
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:0%"></div></div>
+            <div class="progress-label">Queued...</div>
+          </div>
+        </div>
+        <div class="file-status uploading">Queued</div>
+        <button class="file-remove" type="button">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      `;
+
+      card.querySelector(".file-remove").addEventListener("click", () => card.remove());
+      fileList.appendChild(card);
+      uploadFile(file, card);
+    });
+  }
+
+  function uploadFile(file, card) {
+    const token = getToken();
+    if (!token) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const progressFill = card.querySelector(".progress-bar-fill");
+    const progressLabel = card.querySelector(".progress-label");
+    const statusEl = card.querySelector(".file-status");
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${API}/ct-scans/upload`);
+    xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) {
+        const pct = Math.round((e.loaded / e.total) * 100);
+        progressFill.style.width = pct + "%";
+        progressLabel.textContent = `Uploading... ${pct}%`;
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        try {
+          const data = JSON.parse(xhr.responseText || "{}");
+          if (data.scan_id != null && data.scan_id !== "") {
+            const id = Number(data.scan_id);
+            if (!Number.isNaN(id)) lastUploadScanId = id;
+          }
+        } catch (_) { /* ignore */ }
+        card.classList.add("done");
+        statusEl.classList.replace("uploading", "done");
+        statusEl.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Uploaded`;
+        progressLabel.textContent = "Upload complete";
+      } else {
+        markError(card, statusEl, progressLabel);
+      }
+    };
+
+    xhr.onerror = () => markError(card, statusEl, progressLabel);
+    xhr.send(formData);
+  }
+
+  function markError(card, statusEl, progressLabel) {
+    card.classList.add("error");
+    statusEl.classList.replace("uploading", "error");
+    statusEl.textContent = "Failed";
+    progressLabel.textContent = "Upload failed";
+  }
+
+  function resetGenerateButton(btn) {
+    btn.disabled = false;
+    btn.innerHTML = `
+      Process & Generate 3D Model
+      <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    `;
+  }
+
+  // Generate 3D Model: run Python pipeline on server, then open viewer
+  async function handleGenerate3D() {
+    const btn = document.getElementById("generateBtn");
+    const token = getToken();
+    if (!token) return;
+
+    if (!lastUploadScanId) {
+      alert("Upload a DICOM ZIP (or DICOM files) first, then generate the 3D model.");
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = `
+      Processing...
+      <span style="margin-left:10px; display:inline-block; animation:spin 1s linear infinite;">⟳</span>
+    `;
+
+    try {
+      const start = await fetch(`${API}/ct-scans/${lastUploadScanId}/reconstruct`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (start.status === 401) {
+        localStorage.removeItem("access_token");
+        window.location.href = "login.html";
+        return;
+      }
+      // 409 = already processing; still open the viewer so it can poll for completion.
+      if (!start.ok && start.status !== 409) {
+        const err = await start.json().catch(() => ({}));
+        const d = err.detail;
+        const msg = Array.isArray(d) ? d.map((x) => x.msg || x).join("; ") : (d || `Could not start reconstruction (${start.status})`);
+        throw new Error(msg);
+      }
+
+      // Open viewer immediately; that page polls until the mesh is ready (long runs block here otherwise).
+      window.location.href = `generate-3d-model.html?scan_id=${lastUploadScanId}`;
+      return;
+    } catch (e) {
+      console.error(e);
+      alert(e.message || String(e));
+      resetGenerateButton(btn);
+    }
+  }
+
+  // Initialize everything
+  document.addEventListener("DOMContentLoaded", () => {
+    loadUserProfile();
+
+    const dropZone = document.getElementById("dropZone");
+    const fileInput = document.getElementById("fileInput");
+    const chooseBtn = document.getElementById("chooseBtn");
+
+    // Drag & Drop
+    dropZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropZone.classList.add("dragover");
+    });
+    dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("dragover");
+      if (e.dataTransfer?.files?.length) handleFiles(e.dataTransfer.files);
+    });
+
+    // Click to upload
+    dropZone.addEventListener("click", (e) => {
+      if (!e.target.closest("button")) fileInput.click();
+    });
+
+    chooseBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      fileInput.click();
+    });
+
+    fileInput.addEventListener("change", (e) => {
+      if (e.target.files?.length) {
+        handleFiles(e.target.files);
+        e.target.value = "";
+      }
+    });
+
+    // Attach Generate Button
+    document.getElementById("generateBtn").addEventListener("click", handleGenerate3D);
+  });
+</script>
+
+<style>
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+</style>
+</body>
+</html>
