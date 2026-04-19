@@ -1,0 +1,300 @@
+:root {
+  --red: #E8251A;
+  --dark-red: #C01A10;
+  --black: #0e0e0e;
+  --off-white: #F4F3F0;
+  --card-bg: #ECEAE6;
+}
+
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: var(--off-white);
+  color: var(--black);
+}
+
+/* NAV */
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 40px;
+  background: white;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-img img {
+  width: 32px;
+}
+
+.logo-text span {
+  color: var(--red);
+}
+
+.nav-links {
+  display: flex;
+  gap: 30px;
+  list-style: none;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: black;
+}
+
+/* FIX: nav-actions needs display:flex so buttons sit side-by-side */
+.nav-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.nav-actions button {
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer; /* FIX: cursor was missing on the wrapper rule */
+}
+
+.btn-login {
+  background: var(--red);
+  color: white;
+  border: none;
+  cursor: pointer; /* FIX: always set cursor on individual buttons too */
+}
+
+.btn-signup {
+  border: 1px solid black;
+  background: transparent; /* FIX: was missing — button defaulted to gray */
+  cursor: pointer;
+}
+
+/* HERO */
+.hero {
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+/* BACKGROUND LUNG */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.lung-bg {
+  width: 500px;
+  opacity: 0.08;
+  animation: rotateLung 40s linear infinite;
+}
+
+/* PARTICLES */
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  /* FIX: background-size must match the animation travel distance to
+     avoid a visible seam/flash when the tile resets */
+  background-image: radial-gradient(circle, rgba(232,37,26,0.2) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: moveParticles 20s linear infinite;
+  pointer-events: none; /* FIX: was blocking clicks on hero buttons */
+  z-index: 1;
+}
+
+/* Keep hero text above the particle layer */
+.hero h1,
+.hero-cta {
+  position: relative;
+  z-index: 2;
+}
+
+.hero h1 {
+  font-size: 64px;
+  line-height: 1.1; /* FIX: multi-line headings were clipping without this */
+  margin-bottom: 32px;
+}
+
+/* BUTTONS */
+.btn-primary {
+  background: var(--red);
+  color: white;
+  padding: 14px 28px;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer; /* FIX: cursor was missing */
+}
+
+.btn-primary:hover {
+  background: var(--dark-red);
+}
+
+.btn-secondary {
+  padding: 14px 28px;
+  border-radius: 30px;
+  border: 1px solid black;
+  background: transparent; /* FIX: missing — defaulted to gray */
+  margin-left: 10px;
+  cursor: pointer; /* FIX: cursor was missing */
+}
+
+/* ABOUT */
+.about {
+  display: flex;
+  justify-content: space-around;
+  padding: 80px;
+}
+
+/* NOTE: .about-visual img targets <img> elements; if using <div>
+   placeholders swap this selector to .about-visual .img-placeholder */
+.about-visual img {
+  width: 220px;
+  margin: 10px;
+  border-radius: 10px;
+}
+
+/* SERVICES */
+.services {
+  padding: 80px;
+  text-align: center;
+}
+
+.services-grid {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.service-card {
+  background: var(--card-bg);
+  border-radius: 15px;
+  overflow: hidden;
+  width: 250px;
+}
+
+.service-img img {
+  width: 100%;
+}
+
+.service-desc {
+  padding: 15px;
+}
+
+/* DIVIDER */
+.section-divider {
+  height: 1px;
+  background: rgba(0,0,0,0.1);
+}
+
+/* FOOTER — FIX: was entirely missing from original CSS */
+footer {
+  background: var(--black);
+  color: rgba(255,255,255,0.7);
+  padding: 60px 80px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 60px;
+}
+
+.footer-left {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer-logo-text {
+  font-weight: 800;
+  font-size: 16px;
+  color: #fff;
+}
+
+.footer-logo-text span { color: var(--red); }
+
+.footer-nav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.footer-nav a,
+.footer-links-row a {
+  color: rgba(255,255,255,0.45);
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.footer-nav a:hover,
+.footer-links-row a:hover {
+  color: rgba(255,255,255,0.9);
+}
+
+.footer-copy {
+  font-size: 12px;
+  color: rgba(255,255,255,0.25);
+}
+
+.footer-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.app-store-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  text-decoration: none;
+  color: #fff;
+}
+
+.app-store-badge:hover {
+  background: rgba(255,255,255,0.13);
+}
+
+/* ANIMATIONS */
+
+/* FIX: original used rotate(0) — unitless 0 is invalid inside rotate().
+   Must be rotate(0deg). Renamed to avoid collision with CSS rotate filter. */
+@keyframes rotateLung {
+  from { transform: rotate(0deg); }  /* FIX: was rotate(0) — invalid */
+  to   { transform: rotate(360deg); }
+}
+
+/* FIX: original translateY(-40px) created a visible jump when
+   the animation looped. Tiling by background-size (40px) means
+   we only need to shift one full tile (40px) in one direction. */
+@keyframes moveParticles {
+  from { background-position: 0 0; }
+  to   { background-position: 0 40px; } /* FIX: moves exactly one tile = seamless loop */
+}
