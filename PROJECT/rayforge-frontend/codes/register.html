@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Refactr Medic — Sign Up</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --red: #e8281e;
+    --red-dark: #c01f17;
+    --black: #111111;
+    --off-white: #f5f4f0;
+    --gray: #535252;
+    --border: #ddd;
+  }
+  body {
+    font-family: 'Aeonik', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: var(--off-white);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 48px;
+    background: var(--off-white);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .logo-img { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .logo-img img { width: 100%; height: 100%; object-fit: contain; }
+  .logo-text { font-family: 'Aeonik', sans-serif; font-weight: 700; font-size: 1.1rem; color: var(--black); letter-spacing: -0.02em; }
+  .nav-links { display: flex; gap: 40px; list-style: none; }
+  .nav-links a { font-size: 0.9rem; color: var(--black); text-decoration: none; opacity: 0.7; transition: opacity 0.2s; }
+  .nav-links a:hover { opacity: 1; }
+  .nav-btns { display: flex; gap: 10px; }
+  .btn-login { padding: 8px 20px; border-radius: 99px; border: none; background: var(--black); color: white; font-family: 'Aeonik', sans-serif; font-size: 0.85rem; cursor: pointer; transition: opacity 0.2s; }
+  .btn-login:hover { opacity: 0.8; }
+  .btn-signup { padding: 8px 20px; border-radius: 99px; border: none; background: var(--red); color: white; font-family: 'Aeonik', sans-serif; font-size: 0.85rem; cursor: pointer; transition: background 0.2s; }
+  .btn-signup:hover { background: var(--red-dark); }
+  main { flex: 1; display: grid; grid-template-columns: 1fr 1fr; min-height: calc(100vh - 65px); animation: fadeUp 0.5s ease both; }
+  .left-panel { background: var(--black); padding: 80px 64px; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
+  .left-panel::before { content: ''; position: absolute; width: 500px; height: 500px; background: radial-gradient(circle, rgba(232,40,30,0.15) 0%, transparent 70%); bottom: -100px; left: -100px; border-radius: 50%; }
+  .left-panel::after { content: ''; position: absolute; width: 300px; height: 300px; background: radial-gradient(circle, rgba(232,40,30,0.08) 0%, transparent 70%); top: 50px; right: -50px; border-radius: 50%; }
+  .left-headline { font-family: 'Aeonik', sans-serif; font-size: 3.2rem; font-weight: 800; color: white; line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 24px; position: relative; z-index: 1; }
+  .left-headline span { color: var(--red); }
+  .left-sub { font-size: 1rem; color: rgba(255,255,255,0.5); line-height: 1.7; margin-bottom: 48px; position: relative; z-index: 1; max-width: 380px; }
+  .feature-list { display: flex; flex-direction: column; gap: 16px; position: relative; z-index: 1; }
+  .feature-item { display: flex; align-items: center; gap: 14px; color: rgba(255,255,255,0.7); font-size: 0.9rem; }
+  .feature-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(232,40,30,0.15); border: 1px solid rgba(232,40,30,0.25); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .feature-icon svg { width: 16px; height: 16px; stroke: var(--red); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .scan-visual { margin: 48px 0; display: flex; gap: 12px; align-items: flex-end; position: relative; z-index: 1; }
+  .scan-bar { width: 6px; background: var(--red); border-radius: 3px; opacity: 0.6; animation: bar-anim 1.4s ease-in-out infinite; }
+  .scan-bar:nth-child(1){height:24px;animation-delay:0s}.scan-bar:nth-child(2){height:40px;animation-delay:0.1s}.scan-bar:nth-child(3){height:32px;animation-delay:0.2s}.scan-bar:nth-child(4){height:56px;animation-delay:0.3s}.scan-bar:nth-child(5){height:44px;animation-delay:0.4s}.scan-bar:nth-child(6){height:28px;animation-delay:0.5s}.scan-bar:nth-child(7){height:48px;animation-delay:0.6s}
+  @keyframes bar-anim { 0%,100%{opacity:0.6;transform:scaleY(1)} 50%{opacity:1;transform:scaleY(1.15)} }
+  .scan-info { color: rgba(255,255,255,0.4); font-size: 0.75rem; font-weight: 300; padding-left: 12px; border-left: 1px solid rgba(255,255,255,0.1); }
+  .scan-info strong { display: block; color: white; font-size: 1rem; font-weight: 600; }
+  .right-panel { padding: 60px 80px; display: flex; flex-direction: column; justify-content: center; background: var(--off-white); }
+  .form-header { margin-bottom: 36px; }
+  .form-title { font-family: 'Aeonik', sans-serif; font-size: 2rem; font-weight: 800; color: var(--black); letter-spacing: -0.03em; margin-bottom: 8px; }
+  .form-subtitle { font-size: 0.9rem; color: var(--gray); }
+  .form-subtitle a { color: var(--red); text-decoration: none; font-weight: 500; }
+  .form { display: flex; flex-direction: column; gap: 18px; }
+  .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .input-group { display: flex; flex-direction: column; gap: 6px; }
+  .input-label { font-size: 0.8rem; font-weight: 500; color: var(--black); letter-spacing: 0.01em; }
+  .input-field { padding: 12px 16px; border: 1.5px solid var(--border); border-radius: 10px; background: white; font-family: 'Aeonik', sans-serif; font-size: 0.9rem; color: var(--black); transition: border-color 0.2s, box-shadow 0.2s; outline: none; }
+  .input-field::placeholder { color: #bbb; }
+  .input-field:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(232,40,30,0.1); }
+  .input-field.has-icon { padding-left: 42px; }
+  .input-wrapper { position: relative; }
+  .input-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: #bbb; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+  .role-select { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .role-option { padding: 12px 16px; border: 1.5px solid var(--border); border-radius: 10px; background: white; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 10px; }
+  .role-option:hover { border-color: #ccc; }
+  .role-option.selected { border-color: var(--red); background: rgba(232,40,30,0.04); }
+  .role-option input { display: none; }
+  .role-dot { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--border); flex-shrink: 0; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+  .role-option.selected .role-dot { border-color: var(--red); background: var(--red); }
+  .role-option.selected .role-dot::after { content: ''; width: 6px; height: 6px; background: white; border-radius: 50%; }
+  .role-label { font-size: 0.85rem; font-weight: 500; color: var(--black); }
+  .role-sub { font-size: 0.73rem; color: var(--gray); }
+  .terms { font-size: 0.78rem; color: var(--gray); line-height: 1.6; }
+  .terms a { color: var(--red); text-decoration: none; }
+  .submit-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; background: var(--red); color: white; font-family: 'Aeonik', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: -0.01em; }
+  .submit-btn:hover:not(:disabled) { background: var(--red-dark); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(232,40,30,0.3); }
+  .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+  .submit-btn svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .strength-meter { display: flex; gap: 4px; margin-top: 4px; }
+  .strength-bar { height: 3px; flex: 1; border-radius: 2px; background: var(--border); transition: background 0.3s; }
+  .strength-bar.active { background: var(--red); }
+  .strength-label { font-size: 0.72rem; color: var(--gray); margin-top: 2px; }
+
+  /* ── verification sent banner ── */
+  .verify-banner {
+    display: none;
+    padding: 16px 20px;
+    background: #f0fdf4;
+    border: 1.5px solid #bbf7d0;
+    border-radius: 12px;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .verify-banner.show { display: flex; }
+  .verify-banner-icon { flex-shrink: 0; width: 36px; height: 36px; background: #dcfce7; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .verify-banner-icon svg { width: 16px; height: 16px; stroke: #16a34a; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .verify-banner-body { flex: 1; }
+  .verify-banner-title { font-size: 0.88rem; font-weight: 600; color: #15803d; margin-bottom: 3px; }
+  .verify-banner-sub { font-size: 0.78rem; color: #4b7a55; line-height: 1.5; }
+
+  /* ── resend block ── */
+  .resend-block {
+    display: none;
+    padding: 16px 20px;
+    background: rgba(232,40,30,0.04);
+    border: 1.5px solid rgba(232,40,30,0.15);
+    border-radius: 12px;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .resend-block.show { display: flex; }
+  .resend-block p { font-size: 0.8rem; color: var(--gray); line-height: 1.6; }
+  .resend-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 20px; border-radius: 10px; border: 1.5px solid var(--red); background: transparent; color: var(--red); font-family: 'Aeonik', sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; width: 100%; }
+  .resend-btn:hover:not(:disabled) { background: rgba(232,40,30,0.07); }
+  .resend-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .resend-btn svg { width: 15px; height: 15px; stroke: var(--red); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .resend-msg { font-size: 0.78rem; font-weight: 500; display: none; }
+  .resend-msg.ok { color: #16a34a; display: block; }
+  .resend-msg.err { color: var(--red); display: block; }
+  .resend-cooldown { font-size: 0.75rem; color: var(--gray); display: none; }
+  .resend-cooldown.show { display: block; }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+</style>
+</head>
+<body>
+<nav>
+  <a href="refactr-medic.html" class="logo">
+    <div class="logo-img"><img src="images/logo.png" alt="Refactr Medic"></div>
+    <span class="logo-text">Refactr Medic</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="refactr-medic.html">Home</a></li>
+    <li><a href="refactr-medic.html#about">About</a></li>
+    <li><a href="refactr-medic.html">Products</a></li>
+    <li><a href="refactr-medic.html#services">Services</a></li>
+    <li><a href="refactr-medic.html#contact">Contact</a></li>
+  </ul>
+  <div class="nav-btns">
+    <button class="btn-login" onclick="location.href='login.html'">Login</button>
+    <button class="btn-signup" onclick="location.href='register.html'">Sign Up</button>
+  </div>
+</nav>
+
+<main>
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <h1 class="left-headline">See inside.<br><span>Act faster.</span></h1>
+    <p class="left-sub">Join thousands of medical professionals transforming CT scans into interactive 3D models for faster, clearer diagnosis.</p>
+    <div class="feature-list">
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        Interactive 3D CT Scan Visualization
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        </div>
+        AI-Powered Tumor Detection
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        Secure Patient Data Management
+      </div>
+    </div>
+    <div class="scan-visual">
+      <div class="scan-bar"></div><div class="scan-bar"></div><div class="scan-bar"></div>
+      <div class="scan-bar"></div><div class="scan-bar"></div><div class="scan-bar"></div>
+      <div class="scan-bar"></div>
+      <div class="scan-info"><strong>2,400+</strong>scans processed today</div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="form-header">
+      <h2 class="form-title">Create your account</h2>
+      <p class="form-subtitle">Already have an account? <a href="login.html">Sign in here</a></p>
+    </div>
+
+    <form id="registerForm" class="form">
+      <div class="input-row">
+        <div class="input-group">
+          <label class="input-label">First Name</label>
+          <input type="text" id="firstName" class="input-field" placeholder="John" required>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Last Name</label>
+          <input type="text" id="lastName" class="input-field" placeholder="Doe" required>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Email Address</label>
+        <div class="input-wrapper">
+          <svg class="input-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <input type="email" id="email" class="input-field has-icon" placeholder="doctor@hospital.com" required>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Medical License / ID (optional)</label>
+        <div class="input-wrapper">
+          <svg class="input-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <input type="text" id="license" class="input-field has-icon" placeholder="e.g. ML-2024-XXXX">
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">I am a</label>
+        <div class="role-select">
+          <label class="role-option selected" onclick="selectRole(this)">
+            <input type="radio" name="role" value="physician">
+            <div class="role-dot"></div>
+            <div><div class="role-label">Physician</div><div class="role-sub">MD / Specialist</div></div>
+          </label>
+          <label class="role-option" onclick="selectRole(this)">
+            <input type="radio" name="role" value="radiologist">
+            <div class="role-dot"></div>
+            <div><div class="role-label">Radiologist</div><div class="role-sub">Imaging expert</div></div>
+          </label>
+          <label class="role-option" onclick="selectRole(this)">
+            <input type="radio" name="role" value="patient">
+            <div class="role-dot"></div>
+            <div><div class="role-label">Patient</div><div class="role-sub">Personal use</div></div>
+          </label>
+          <label class="role-option" onclick="selectRole(this)">
+            <input type="radio" name="role" value="researcher">
+            <div class="role-dot"></div>
+            <div><div class="role-label">Researcher</div><div class="role-sub">Academic / Lab</div></div>
+          </label>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Password</label>
+        <div class="input-wrapper">
+          <svg class="input-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input type="password" id="passwordInput" class="input-field has-icon" placeholder="Create a strong password" oninput="checkStrength(this.value)" required>
+        </div>
+        <div class="strength-meter">
+          <div class="strength-bar" id="s1"></div>
+          <div class="strength-bar" id="s2"></div>
+          <div class="strength-bar" id="s3"></div>
+          <div class="strength-bar" id="s4"></div>
+        </div>
+        <div class="strength-label" id="strengthLabel">Enter a password</div>
+      </div>
+
+      <p class="terms">By creating an account, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>. Patient data is handled in accordance with HIPAA regulations.</p>
+
+      <button type="submit" id="submitBtn" class="submit-btn">
+        Create Account
+        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+
+      <!-- shown after successful registration -->
+      <div class="verify-banner" id="verifyBanner">
+        <div class="verify-banner-icon">
+          <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <div class="verify-banner-body">
+          <div class="verify-banner-title">Verification email sent!</div>
+          <div class="verify-banner-sub">We sent a link to <strong id="sentToEmail"></strong>. Click it to activate your account. Check your spam folder if you don't see it.</div>
+        </div>
+      </div>
+
+      <!-- resend block -->
+      <div class="resend-block" id="resendBlock">
+        <p>Didn't get the email? Wait a moment then resend — check spam too.</p>
+        <button type="button" class="resend-btn" id="resendBtn">
+          <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.98"/></svg>
+          Send Verification Link Again
+        </button>
+        <span class="resend-cooldown" id="resendCooldown"></span>
+        <span class="resend-msg" id="resendMsg"></span>
+      </div>
+
+    </form>
+  </div>
+</main>
+
+<script>
+  function selectRole(el) {
+    document.querySelectorAll('.role-option').forEach(r => r.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function checkStrength(val) {
+    const bars = ['s1','s2','s3','s4'].map(id => document.getElementById(id));
+    const label = document.getElementById('strengthLabel');
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    bars.forEach((b, i) => b.classList.toggle('active', i < score));
+    label.textContent = val.length === 0 ? 'Enter a password' : ['','Weak','Fair','Good','Strong'][score];
+  }
+
+  // ── state ──
+  var registeredEmail = '';
+  var cooldownTimer = null;
+
+  // ── register ──
+  document.getElementById('registerForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName  = document.getElementById('lastName').value.trim();
+    const email     = document.getElementById('email').value.trim();
+    const password  = document.getElementById('passwordInput').value;
+    const submitBtn = document.getElementById('submitBtn');
+
+    if (!firstName || !lastName || !email || !password) {
+      alert('Please fill in First Name, Last Name, Email and Password.');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = 'Creating account…';
+
+    try {
+      const res  = await fetch('http://127.0.0.1:8000/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: `${firstName} ${lastName}`, email, password })
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        registeredEmail = email;
+        // lock the form fields
+        ['firstName','lastName','email','passwordInput'].forEach(id => document.getElementById(id).disabled = true);
+        document.querySelectorAll('.role-option').forEach(el => el.style.pointerEvents = 'none');
+
+        // update submit button to success state
+        submitBtn.innerHTML = '✓ Account created';
+        submitBtn.style.background = '#16a34a';
+        submitBtn.style.cursor = 'default';
+
+        // show banner and resend block
+        document.getElementById('sentToEmail').textContent = email;
+        document.getElementById('verifyBanner').classList.add('show');
+        document.getElementById('resendBlock').classList.add('show');
+
+        startCooldown(30);
+      } else {
+        alert('❌ ' + (data.detail || 'Registration failed. Please try again.'));
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Create Account <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:white;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+      }
+    } catch (err) {
+      console.error(err);
+      alert('❌ Could not connect to server.\nMake sure the backend is running.');
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = 'Create Account <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:white;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+    }
+  });
+
+  // ── resend ──
+  document.getElementById('resendBtn').addEventListener('click', async function () {
+    if (!registeredEmail) return;
+
+    const btn = document.getElementById('resendBtn');
+    const msg = document.getElementById('resendMsg');
+
+    btn.disabled = true;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:var(--red);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.98"/></svg> Sending…';
+    msg.className = 'resend-msg';
+    msg.textContent = '';
+
+    try {
+      const res  = await fetch('http://127.0.0.1:8000/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: registeredEmail })
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        msg.className = 'resend-msg ok';
+        msg.textContent = '✓ Verification email resent — check your inbox and spam.';
+        startCooldown(60);
+      } else {
+        msg.className = 'resend-msg err';
+        msg.textContent = '✗ ' + (data.detail || 'Could not resend. Try again shortly.');
+        btn.disabled = false;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:var(--red);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.98"/></svg> Send Verification Link Again';
+      }
+    } catch (err) {
+      msg.className = 'resend-msg err';
+      msg.textContent = '✗ Server unreachable. Is the backend running?';
+      btn.disabled = false;
+      btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:var(--red);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.98"/></svg> Send Verification Link Again';
+    }
+  });
+
+  // ── cooldown timer ──
+  function startCooldown(seconds) {
+    const btn      = document.getElementById('resendBtn');
+    const cooldown = document.getElementById('resendCooldown');
+
+    if (cooldownTimer) clearInterval(cooldownTimer);
+    btn.disabled = true;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:var(--red);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.98"/></svg> Send Verification Link Again';
+
+    let remaining = seconds;
+    cooldown.textContent = `You can resend in ${remaining}s`;
+    cooldown.classList.add('show');
+
+    cooldownTimer = setInterval(function () {
+      remaining--;
+      if (remaining <= 0) {
+        clearInterval(cooldownTimer);
+        btn.disabled = false;
+        cooldown.classList.remove('show');
+        cooldown.textContent = '';
+      } else {
+        cooldown.textContent = `You can resend in ${remaining}s`;
+      }
+    }, 1000);
+  }
+</script>
+</body>
+</html>
