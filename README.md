@@ -1,2 +1,4 @@
 # RayForge
-RayForge is a web-based platform that enables users to visualize their CT scans as interactive 3D models for enhanced medical insight.
+Medical imaging workflows in radiology departments and academic institutions generate large volumes of CT scan data in the DICOM (Digital Imaging and Communications in Medicine) format. While specialized clinical workstations exist for radiologists, there is a significant gap in lightweight, accessible, web-based tooling that allows students, researchers, and educators to interactively visualize three-dimensional lung anatomy derived from raw CT data without requiring expensive proprietary software.
+RayForge addresses this gap by providing a web-oriented platform that ingests chest CT studies (packaged as DICOM ZIP archives), executes a server-side imaging pipeline to extract and reconstruct lung geometry, and delivers the resulting 3D mesh to the browser for interactive exploration via WebGL. The system is framed for education and demonstration purposes, enabling users to observe, rotate, and inspect a patient's lung surface model in a manner previously confined to specialized clinical environments.
+
