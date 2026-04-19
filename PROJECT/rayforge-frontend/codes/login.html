@@ -14,7 +14,7 @@
     --off-white: #f5f4f0;
     --gray: #535252;
     --border: #ddd;
-  }a
+  }
   body {
     font-family: 'Aeonik', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     background: var(--off-white);
@@ -29,7 +29,7 @@
     padding: 18px 48px;
     background: var(--off-white);
     border-bottom: 1px solid var(--border);
-    position: sticky; top: 0; z-index: 100;a
+    position: sticky; top: 0; z-index: 100;
   }
   .logo {
     display: flex;
@@ -365,7 +365,7 @@
         <a href="forgot-password.html" class="forgot-link">Forgot password?</a>
       </div>
       <button type="submit" id="submitBtn" class="submit-btn">
-        Sign In
+        Log In
         <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </button>
       <div class="or-divider"><span>or continue with</span></div>
@@ -436,7 +436,7 @@
 
     // Loading state
     submitBtn.disabled = true;
-    submitBtn.innerHTML = `Signing in...`;
+    submitBtn.innerHTML = `logging in...`;
 
     try {
       const formData = new URLSearchParams();
@@ -462,9 +462,16 @@ formData.append('remember_me', rememberMe);
 
         alert("✅ Login successful! Redirecting...");
         window.location.href = 'upload-ct-scan.html';
-      } else {
-        alert(data.detail || "Login failed. Please check your email and password.");
-      }
+      } 
+	  else {
+		const errorMessage = data.detail?.message || "Login failed. Please check your email and password.";
+		if (data.detail?.error === "email_not_verified") {
+			alert(errorMessage + "\n\nPlease verify your email first.");
+		} 
+		else {
+			alert(errorMessage);
+		}
+}
     } catch (error) {
       console.error('Login error:', error);
       alert("❌ Cannot connect to the server.\nMake sure the backend is running:\nuvicorn app.main:app --reload");

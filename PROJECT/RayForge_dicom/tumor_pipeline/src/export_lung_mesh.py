@@ -56,6 +56,57 @@ def sitk_mask_to_vtk(mask_img: sitk.Image) -> vtk.vtkImageData:
     return vtk_img
 
 
+def limit_mesh_triangle_count(poly: vtk.vtkPolyData, max_tris: int) -> vtk.vtkPolyData:
+    """
+    If the mesh still exceeds ``max_tris`` after decimation, reduce further so the
+    browser can parse the OBJ. Uses vtkQuadricClustering, then vtkDecimatePro if needed.
+    """
+    tri = vtk.vtkTriangleFilter()
+    tri.SetInputData(poly)
+    tri.Update()
+    mesh = tri.GetOutput()
+    n = int(mesh.GetNumberOfCells())
+    if n == 0:
+        return mesh
+    if n <= max_tris:
+        return mesh
+
+    d = 160
+    best_under: vtk.vtkPolyData | None = None
+    while d >= 8:
+        qc = vtk.vtkQuadricClustering()
+        qc.SetInputData(mesh)
+        qc.SetNumberOfDivisions(d, d, d)
+        qc.SetAutoAdjustNumberOfDivisions(0)
+        qc.Update()
+        out = qc.GetOutput()
+        m = int(out.GetNumberOfCells())
+        if m <= max_tris:
+            best_under = out
+            break
+        d -= 12
+
+    cur = best_under if best_under is not None else out
+    for _ in range(24):
+        if int(cur.GetNumberOfCells()) <= max_tris:
+            break
+        dec = vtk.vtkDecimatePro()
+        dec.SetInputData(cur)
+        dec.SetTargetReduction(0.32)
+        dec.PreserveTopologyOn()
+        dec.Update()
+        nxt = dec.GetOutput()
+        if int(nxt.GetNumberOfCells()) >= int(cur.GetNumberOfCells()):
+            break
+        cur = nxt
+
+    clean = vtk.vtkCleanPolyData()
+    clean.SetInputData(cur)
+    clean.SetTolerance(0.001)
+    clean.Update()
+    return clean.GetOutput()
+
+
 def vtk_polydata_to_obj(poly: vtk.vtkPolyData, filepath: str) -> None:
     """Minimal OBJ writer (faces are triangles, 1-based indices)."""
     poly.BuildCells()
@@ -85,7 +136,8 @@ def lung_mask_to_obj_mesh(
     mask_img: sitk.Image,
     output_path: str,
     iso: float = 0.5,
-    target_reduction: float = 0.93,
+    target_reduction: float = 0.20,
+    max_triangles: int = 500000,
 ) -> None:
     vtk_img = sitk_mask_to_vtk(mask_img)
 
@@ -116,14 +168,27 @@ def lung_mask_to_obj_mesh(
     normals.Update()
 
     out = normals.GetOutput()
-    vtk_polydata_to_obj(out, output_path)
+    out = limit_mesh_triangle_count(out, int(max_triangles))
+
+    nn = vtk.vtkPolyDataNormals()
+    nn.SetInputData(out)
+    nn.SplittingOff()
+    nn.ConsistencyOn()
+    nn.Update()
+    final_mesh = nn.GetOutput()
+    print(
+        f"[export_lung_mesh] Final triangle count: {final_mesh.GetNumberOfCells()} "
+        f"(cap {max_triangles})"
+    )
+    vtk_polydata_to_obj(final_mesh, output_path)
 
 
 def run_pipeline(
     dicom_dir: str,
     output_obj: str,
     iso_spacing: float = 1.0,
-    target_reduction: float = 0.93,
+    target_reduction: float = 0.20,
+    max_triangles: int = 500000,
 ) -> None:
     dicom_dir = find_dicom_series_dir(os.path.abspath(dicom_dir))
     print(f"[export_lung_mesh] Using DICOM directory: {dicom_dir}")
@@ -144,7 +209,12 @@ def run_pipeline(
     if parent:
         os.makedirs(parent, exist_ok=True)
     print(f"[export_lung_mesh] Writing mesh: {output_obj}")
-    lung_mask_to_obj_mesh(lung_mask, output_obj, target_reduction=target_reduction)
+    lung_mask_to_obj_mesh(
+        lung_mask,
+        output_obj,
+        target_reduction=target_reduction,
+        max_triangles=max_triangles,
+    )
     print("[export_lung_mesh] Done.")
 
 
@@ -161,8 +231,14 @@ def main() -> int:
     p.add_argument(
         "--target-reduction",
         type=float,
-        default=0.93,
-        help="VTK decimation 0–0.95; higher = fewer triangles (faster in browser)",
+        default=0.20,
+        help="VTK DecimatePro: fraction of triangles removed (0–0.95). Lower = finer mesh.",
+    )
+    p.add_argument(
+        "--max-triangles",
+        type=int,
+        default=500000,
+        help="Safety cap on triangles; only applied if mesh is larger (protects the browser).",
     )
     args = p.parse_args()
 
@@ -172,6 +248,7 @@ def main() -> int:
             args.output,
             iso_spacing=args.iso_spacing,
             target_reduction=args.target_reduction,
+            max_triangles=args.max_triangles,
         )
     except Exception as e:
         print(f"[export_lung_mesh] ERROR: {e}", file=sys.stderr)
